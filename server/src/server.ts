@@ -3,6 +3,7 @@ import {PrismaClient} from '@prisma/client';
 import convertHourStringToMinute from './utils/convert-hour-string-to-minute';
 import convertMinutesToHourString from './utils/convert-minutes-to-hour-string';
 import cors from 'cors';
+import { z, getErrorMap } from "zod";
 
 const app = express();
 
@@ -46,8 +47,6 @@ app.get('/games/:id/ads', async (request: Request, response: Response) => {
     }
   });
 
-  console.log(ads);
-
   return response.json(ads.map(ad => ({
     ...ad,
     hoursStart: convertMinutesToHourString(Number(ad.hoursStart)),
@@ -57,8 +56,6 @@ app.get('/games/:id/ads', async (request: Request, response: Response) => {
 });
 
 app.post('/games/:id/ads', async(request: Request, response: Response) => {
-  console.log('body: ', request.body);
-
   const { 
     name, 
     yearsPlaying, 
@@ -69,18 +66,48 @@ app.post('/games/:id/ads', async(request: Request, response: Response) => {
     useVoiceChannel
   } = request.body;
   const gameId = request.params.id;
-
-  const ad = await prisma.ad.create({
-    data: {
-      gameId,
+  
+  try {
+    const Game = z.object({
+      name: z.string(),
+      yearsPlaying: z.number(),
+      discord: z.string(),
+      weekDays: z.array(z.number()),
+      hoursStart: z.string(),
+      hoursEnd: z.string(),
+      useVoiceChannel: z.boolean(),
+      gameId: z.string().uuid(),
+    });
+    
+    Game.parse({
       name,
       yearsPlaying,
       discord,
-      weekDays: weekDays.join(','),
-      hoursStart: convertHourStringToMinute(hoursStart),
-      hoursEnd: convertHourStringToMinute(hoursEnd),
-      useVoiceChannel
+      weekDays,
+      hoursStart,
+      hoursEnd,
+      useVoiceChannel,
+      gameId,
+    });
+  }catch(error){
+    if(error instanceof z.ZodError){
+      return response.status(400).json(error.errors);
     }
+  };
+
+  const newGameAd = {
+    gameId,
+    name,
+    yearsPlaying,
+    discord,
+    weekDays: weekDays.join(','),
+    hoursStart: convertHourStringToMinute(hoursStart),
+    hoursEnd: convertHourStringToMinute(hoursEnd),
+    useVoiceChannel
+  };
+
+  const ad = await prisma.ad.create({
+    data: newGameAd
   });
 
   return response.json(ad);
@@ -102,5 +129,5 @@ app.get('/ads/:id/discord', async (request: Request, response: Response) => {
 });
 
 app.listen(3333, () => {
-  console.log('server running!');
+  console.log('server running on 3333 port 🚀');
 });
