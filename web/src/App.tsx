@@ -1,89 +1,192 @@
-import './styles/main.css';
-import { MagnifyingGlassPlus } from 'phosphor-react';
-import logoImage from './assets/logo-nlw-esports.svg';
+import "./styles/main.css";
+import logoImage from "./assets/logo-nlw-esports.svg";
+import GameBanner from "./components/GameBanner";
+import { useEffect, useState } from "react";
+import api from "./services/api";
+import Game from "./interfaces/games";
+import CreateAdBanner from "./components/CreateAdBanner";
+import * as Dialog from "@radix-ui/react-dialog";
+import { GameController } from "phosphor-react";
+import Input from "./components/Form/input";
 
 function App() {
+  const [games, setGames] = useState<Game[]>([]);
+
+  const fetchGames = async () => {
+    const response = await api.get<Game[]>("/games");
+    setGames(response.data);
+  };
+
+  useEffect(() => {
+    fetchGames();
+  }, []);
 
   return (
     <div className="max-w-[1344px] mx-auto flex flex-col items-center my-20">
       <img src={logoImage} alt="" />
 
       <h1 className="text-6xl text-white font-black mt-20">
-        Seu <span className="text-transparent bg-gradient bg-clip-text">duo</span> está aqui.
+        Seu{" "}
+        <span className="text-transparent bg-gradient bg-clip-text">duo</span>{" "}
+        está aqui.
       </h1>
 
       <div className="grid grid-cols-6 gap-6 mt-16">
-        <a href="" className="relative rounded-lg overflow-hidden">
-          <img src="/game-1.png" alt="" />
-
-          <div className="w-full pt-16 pb-4 px-4 bg-game-gradient absolute bottom-0 left-0 right-0">
-            <span className="font-bold text-white block">League of Legends</span>
-
-            <span className="text-zinc-300 text-sm">4 anúncios</span>
-          </div>
-        </a>
-        <a href="" className="relative rounded-lg overflow-hidden">
-          <img src="/game-2.png" alt="" />
-
-          <div className="w-full pt-16 pb-4 px-4 bg-game-gradient absolute bottom-0 left-0 right-0">
-            <span className="font-bold text-white block">Dota</span>
-
-            <span className="text-zinc-300 text-sm">4 anúncios</span>
-          </div>
-        </a>
-        <a href="" className="relative rounded-lg overflow-hidden">
-          <img src="/game-3.png" alt="" />
-
-          <div className="w-full pt-16 pb-4 px-4 bg-game-gradient absolute bottom-0 left-0 right-0">
-            <span className="font-bold text-white block">Counter Strike</span>
-
-            <span className="text-zinc-300 text-sm">4 anúncios</span>
-          </div>
-        </a>
-        <a href="" className="relative rounded-lg overflow-hidden">
-          <img src="/game-4.png" alt="" />
-
-          <div className="w-full pt-16 pb-4 px-4 bg-game-gradient absolute bottom-0 left-0 right-0">
-            <span className="font-bold text-white block">World of Warcraft</span>
-
-            <span className="text-zinc-300 text-sm">4 anúncios</span>
-          </div>
-        </a>
-        <a href="" className="relative rounded-lg overflow-hidden">
-          <img src="/game-5.png" alt="" />
-
-          <div className="w-full pt-16 pb-4 px-4 bg-game-gradient absolute bottom-0 left-0 right-0">
-            <span className="font-bold text-white block">Apex</span>
-
-            <span className="text-zinc-300 text-sm">4 anúncios</span>
-          </div>
-        </a>
-        <a href="" className="relative rounded-lg overflow-hidden">
-          <img src="/game-6.png" alt="" />
-
-          <div className="w-full pt-16 pb-4 px-4 bg-game-gradient absolute bottom-0 left-0 right-0">
-            <span className="font-bold text-white block">Fortnite</span>
-
-            <span className="text-zinc-300 text-sm">4 anúncios</span>
-          </div>
-        </a>
-      </div >
-
-      <div className="pt-1 bg-gradient self-stretch rounded-lg overflow-hidden mt-8">
-        <div className="bg-[#2A2634] px-8 py-6 flex justify-between items-center">
-          <div>
-            <strong className="text-2xl text-white font-black block">Não encontrou o seu duo</strong>
-            <span className="text-zinc-300">Publique um anúncio para encontrar novos players!</span>
-          </div>
-
-          <button className="py-3 px-4 bg-violet-500 text-white rounded hover:bg-violet-600 flex items-center gap-3">
-            <MagnifyingGlassPlus size={24} />
-            Publicar anúncio
-          </button>
-        </div>
+        {games.map((game) => (
+          <GameBanner
+            key={game.id}
+            title={game.title}
+            adsCount={game._count.ads}
+            bannerUrl={game.bannerUrl}
+          />
+        ))}
       </div>
-    </div >
+
+      <Dialog.Root>
+        <CreateAdBanner />
+
+        <Dialog.Portal>
+          <Dialog.Overlay className="bg-black/60 inset-0 fixed">
+            <Dialog.Content className="fixed bg-[#2A2634] py-8 px-10 text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg w-[480px] shadow-lg shadow-black/25">
+              <Dialog.Title className="text-3xl font-black">
+                Publique um anúncio
+              </Dialog.Title>
+
+              <form className="mt-8 flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="game" className="font-semibold">
+                    Qual o game?
+                  </label>
+                  <Input
+                    id="game"
+                    placeholder="Selecione o game que deseja jogar"
+                    type="text"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="name">Seu nome (ou nickname)</label>
+                  <Input
+                    type="text"
+                    name="name"
+                    id="name"
+                    placeholder="Como te chamam dentro do game?"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="yearsPlaying">Joga há quantos anos?</label>
+                    <Input
+                      type="text"
+                      name="yearsPlaying"
+                      id="yearsPlaying"
+                      placeholder="Tudo bem ser ZERO"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="discord">Qual seu discord?</label>
+                    <Input
+                      type="text"
+                      name="discord"
+                      id="discord"
+                      placeholder="Usuario#0000"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-6">
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="weekdays">Quando costuma jogar?</label>
+
+                    <div className="grid grid-cols-4 gap-2">
+                      <button
+                        className="w-8 h-8 rounded bg-zinc-900"
+                        title="Domingo"
+                      >
+                        D
+                      </button>
+                      <button
+                        className="w-8 h-8 rounded bg-zinc-900"
+                        title="Segunda"
+                      >
+                        S
+                      </button>
+                      <button
+                        className="w-8 h-8 rounded bg-zinc-900"
+                        title="Terça"
+                      >
+                        T
+                      </button>
+                      <button
+                        className="w-8 h-8 rounded bg-zinc-900"
+                        title="Quarta"
+                      >
+                        Q
+                      </button>
+                      <button
+                        className="w-8 h-8 rounded bg-zinc-900"
+                        title="Quinta"
+                      >
+                        Q
+                      </button>
+                      <button
+                        className="w-8 h-8 rounded bg-zinc-900"
+                        title="Sexta"
+                      >
+                        S
+                      </button>
+                      <button
+                        className="w-8 h-8 rounded bg-zinc-900"
+                        title="Sábado"
+                      >
+                        S
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 flex-1">
+                    <label htmlFor="timeStart">Qual horário do dia?</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="time"
+                        name="timeStart"
+                        id="timeStart"
+                        placeholder="De"
+                      />
+                      <Input
+                        type="time"
+                        name="timeeEnd"
+                        id="timeeEnd"
+                        placeholder="Até"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-2 flex gap-2 text-small">
+                  <Input type="checkbox" />
+                  Costumo me conectar ao chat de voz?
+                </div>
+
+                <footer className="mt-4 flex justify-end gap-4">
+                  <Dialog.Close className="bg-zinc-500 px-5 h-12 rounded-md font-semibold hover:bg-zinc-600">
+                    Cancelar
+                  </Dialog.Close>
+                  <button
+                    className="bg-violet-500 px-5 h-12 rounded-md font-semibold flex items-center gap-3 hover:bg-violet-600"
+                    type="submit"
+                  >
+                    <GameController size={24} />
+                    Encontrar duo
+                  </button>
+                </footer>
+              </form>
+            </Dialog.Content>
+          </Dialog.Overlay>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </div>
   );
 }
 
-export default App
+export default App;
