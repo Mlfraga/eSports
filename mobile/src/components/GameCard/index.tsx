@@ -1,37 +1,46 @@
-import React from 'react';
-import { TouchableOpacity, TouchableOpacityProps, Text, ImageBackground, ImageSourcePropType } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { styles } from './styles';
-import { THEME } from '../../theme';
-
-export interface GameCardData {
-  id: string;
-  name: string;
-  ads: string;
-  cover: ImageSourcePropType
-};
+import React from "react";
+import {
+  TouchableOpacity,
+  TouchableOpacityProps,
+  Text,
+  ImageBackground,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { styles } from "./styles";
+import { THEME } from "../../theme";
+import Game from "../../interfaces/game";
+import { useNavigation } from "@react-navigation/native";
 
 interface GameCardProps extends TouchableOpacityProps {
-  data: GameCardData;
-};
+  data: Game;
+}
 
 const GameCard: React.FC<GameCardProps> = ({ data, ...rest }) => {
+  const navigation = useNavigation();
+
+  const handleClickGame = () => {
+    navigation.navigate("Game", {
+      id: data.id,
+      title: data.title,
+      bannerUrl: data.bannerUrl,
+    });
+  };
+
   return (
-    <TouchableOpacity style={styles.container} {...rest}>
-      <ImageBackground style={styles.cover} source={data.cover} >
-
+    <TouchableOpacity
+      onPress={handleClickGame}
+      style={styles.container}
+      {...rest}
+    >
+      <ImageBackground style={styles.cover} source={{ uri: data.bannerUrl }}>
         <LinearGradient colors={THEME.COLORS.FOOTER} style={styles.footer}>
-          <Text style={styles.name}>
-            {data.name}
-          </Text>
+          <Text style={styles.title}>{data.title}</Text>
 
-          <Text style={styles.ads}>
-            {data.ads} anúncios
-          </Text>
+          <Text style={styles.ads}>{data._count.ads} anúncios</Text>
         </LinearGradient>
       </ImageBackground>
     </TouchableOpacity>
   );
-}
+};
 
 export default GameCard;
