@@ -6,9 +6,11 @@ export interface GameParams {
 
 export declare global {
   namespace ReactNavigation {
-    interface RootParamList {
-      Home: undefined;
-      Game: {id: string; title: string; bannerUrl: string};
-    }
+    interface RootParamList extends RootStackParamList {}
   }
+}
+
+export type RootStackParamList = {
+  Home: undefined;
+  Game: GameParams;
 }

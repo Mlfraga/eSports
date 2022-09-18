@@ -38,7 +38,7 @@ const Home: React.FC = () => {
           renderItem={({ item }) => <GameCard data={item} />}
           showsHorizontalScrollIndicator={false}
           horizontal
-          style={styles.contentList}
+          contentContainerStyle={styles.contentList}
         />
       </SafeAreaView>
     </Background>
