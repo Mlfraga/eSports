@@ -110,7 +110,7 @@ app.post('/games/:id/ads', async(request: Request, response: Response) => {
     data: newGameAd
   });
 
-  return response.json(ad);
+  return response.status(201).json(ad);
 });
 
 app.get('/ads/:id/discord', async (request: Request, response: Response) => {

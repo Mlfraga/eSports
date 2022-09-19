@@ -1,0 +1,1 @@
+export default interface SelectOption { displayText: string; value: string };
